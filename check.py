@@ -3,7 +3,7 @@ import pickle
 import requests
 import unittest
 
-ENDPOINT = 'http://localhost:5000/test'
+ENDPOINT = 'http://localhost:5000/test/a1'
 
 
 def check_function(function):

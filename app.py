@@ -1,33 +1,43 @@
+import os
 from flask import Flask, request, make_response
+from importlib import import_module
 import pickle
+import inspect
 
 
 app = Flask(__name__)
 
-def load_tests():
-    import test_a1
+def load_tests(test_module):
     
-    avail_tests = {}
-
-    for i in dir(test_a1):
-        if i.startswith('test'):            
-            avail_tests[i] = getattr(test_a1, i)
-
-    return avail_tests
+    module = import_module(test_module)
+    members = inspect.getmembers(module, inspect.isfunction)
+    return {member[0]: member[1] for member in members}
 
 
-@app.route("/test", methods=['POST'])
-def test():
+@app.route("/test/<to_test>", methods=['POST'])
+def test(to_test):
 
-    avail_tests = load_tests()
-    function = pickle.loads(request.data)
+    test_module = f"test_{to_test}"
+
+    if not os.path.exists(f'./{test_module}.py'):
+        return make_response('Wrong assignment/lab', 400)
+
+
+    avail_tests = load_tests(f'{test_module}')
+    
+    try:
+        function = pickle.loads(request.data)
+    except:
+        return make_response('Invalid function', 400)
+
     tester = avail_tests.get(f"test_{function.__name__}")
     
     if tester:
         status = tester(function)
         return {'status': status}
     
-    return make_response('Invalid test', 400)
+    return make_response('Invalid function', 400)
+
 
 if __name__ == "__main__":
     app.run(host='localhost')
