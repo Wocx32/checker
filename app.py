@@ -13,6 +13,9 @@ def load_tests(test_module):
     members = inspect.getmembers(module, inspect.isfunction)
     return {member[0]: member[1] for member in members}
 
+@app.route("/hello")
+def hello():
+    return "hello world"
 
 @app.route("/test/<to_test>", methods=['POST'])
 def test(to_test):
